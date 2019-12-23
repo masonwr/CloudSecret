@@ -71,7 +71,7 @@ func (r *CloudSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		}
 	}
 
-	// init and copy data to child / natike k8s secret
+	// init and copy data to child (or native) k8s secret
 	if childSecret.Data == nil {
 		childSecret.Data = make(map[string][]byte)
 	}
