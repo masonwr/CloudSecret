@@ -1,0 +1,7 @@
+domain: masonwr.dev
+repo: github.com/masonwr/CloudSecret
+resources:
+- group: secrets
+  kind: CloudSecret
+  version: v1
+version: "2"
