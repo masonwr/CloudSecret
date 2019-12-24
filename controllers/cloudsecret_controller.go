@@ -20,6 +20,7 @@ import (
 
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -64,6 +65,15 @@ func (r *CloudSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		childSecret.Name = childSecretKey.Name
 		childSecret.Namespace = childSecretKey.Namespace
 
+		ownerRef := metav1.OwnerReference{
+			APIVersion: cloudSecret.TypeMeta.APIVersion,
+			Kind:       cloudSecret.TypeMeta.Kind,
+			Name:       cloudSecret.Name,
+			UID:        cloudSecret.UID,
+		}
+
+		childSecret.OwnerReferences = []metav1.OwnerReference{ownerRef}
+
 		err := r.Create(ctx, &childSecret)
 		if err != nil {
 			log.Error(err, "unable to create secret")
@@ -85,32 +95,6 @@ func (r *CloudSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	if err != nil {
 		log.Error(err, "unable to update child secret")
 		return ctrl.Result{}, err
-	}
-
-	// register/deregister finalizer
-	if cloudSecret.ObjectMeta.DeletionTimestamp.IsZero() {
-		// is the cloud secret does not have the finalizer, add it
-		if !containsString(cloudSecret.ObjectMeta.Finalizers, finalizer) {
-			log.Info("setting finalizer")
-
-			cloudSecret.ObjectMeta.Finalizers = append(cloudSecret.ObjectMeta.Finalizers, finalizer)
-			if err := r.Update(ctx, &cloudSecret); err != nil {
-				log.Error(err, "unable to add finalizer to cloud secret")
-			}
-		}
-	} else { // cloud secrete is being destroyed
-		if containsString(cloudSecret.ObjectMeta.Finalizers, finalizer) {
-			if err := r.Delete(ctx, &childSecret); err != nil {
-				log.Error(err, "unable to delete child secret")
-			}
-
-			cloudSecret.ObjectMeta.Finalizers = removeString(cloudSecret.ObjectMeta.Finalizers, finalizer)
-			if err := r.Update(ctx, &cloudSecret); err != nil {
-				log.Error(err, "unable to remove finalizer to clud secret")
-			}
-		}
-
-		return ctrl.Result{}, nil
 	}
 
 	return ctrl.Result{}, nil
