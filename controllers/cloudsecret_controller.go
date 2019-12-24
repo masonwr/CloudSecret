@@ -18,7 +18,9 @@ package controllers
 import (
 	"context"
 
+	secretmanager "cloud.google.com/go/secretmanager/apiv1beta1"
 	"github.com/go-logr/logr"
+	secrets "google.golang.org/genproto/googleapis/cloud/secrets/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -43,6 +45,11 @@ type CloudSecretReconciler struct {
 func (r *CloudSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 	log := r.Log.WithValues("cloudsecret", req.NamespacedName)
+
+	secretClient, err := secretmanager.NewClient(ctx)
+	if err != nil {
+		log.Error(err, "unable to create secret manager client")
+	}
 
 	// fetch cloud secret object
 	var cloudSecret secretsv1.CloudSecret
@@ -78,17 +85,20 @@ func (r *CloudSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	}
 
 	// init and copy data to child k8s secret
-	if childSecret.Data == nil {
-		childSecret.Data = make(map[string][]byte)
-	}
+	childSecret.Data = make(map[string][]byte)
 
 	for k, v := range cloudSecret.Spec.Data {
-		childSecret.Data[k] = []byte(v)
+		access, err := secretClient.AccessSecretVersion(ctx, &secrets.AccessSecretVersionRequest{Name: v})
+		if err != nil {
+			log.Error(err, "unable to access secret", "secret_path", v)
+			continue
+		}
+
+		childSecret.Data[k] = access.Payload.GetData()
 	}
 
 	log.Info("updating child secret")
-	err := r.Update(ctx, &childSecret)
-	if err != nil {
+	if err := r.Update(ctx, &childSecret); err != nil {
 		log.Error(err, "unable to update child secret")
 		return ctrl.Result{}, err
 	}
