@@ -59,6 +59,7 @@ func main() {
 		LeaderElection:     enableLeaderElection,
 		Port:               9443,
 	})
+
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
 		os.Exit(1)
