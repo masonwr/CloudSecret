@@ -16,7 +16,9 @@ limitations under the License.
 package v1
 
 import (
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 )
 
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
@@ -43,6 +45,34 @@ type CloudSecret struct {
 
 	Spec   CloudSecretSpec   `json:"spec,omitempty"`
 	Status CloudSecretStatus `json:"status,omitempty"`
+}
+
+// GetChildSecretKey returns a key suitable for searching for a
+// child secret
+func (c *CloudSecret) GetChildSecretKey() types.NamespacedName {
+	return types.NamespacedName{
+		Name:      c.GetName(),
+		Namespace: c.GetNamespace(),
+	}
+}
+
+// InitChildSecret initializes a new k8s secret with *this*
+// cloud secret set as its owner
+func (c *CloudSecret) InitChildSecret() corev1.Secret {
+	var secret corev1.Secret
+
+	secret.SetName(c.GetName())
+	secret.SetNamespace(c.GetNamespace())
+	secret.SetOwnerReferences([]metav1.OwnerReference{
+		metav1.OwnerReference{
+			APIVersion: c.APIVersion,
+			Kind:       c.Kind,
+			Name:       c.Name,
+			UID:        c.UID,
+		},
+	})
+
+	return secret
 }
 
 // +kubebuilder:object:root=true

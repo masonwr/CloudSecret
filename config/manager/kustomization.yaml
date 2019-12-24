@@ -5,4 +5,3 @@ kind: Kustomization
 images:
 - name: controller
   newName: gcr.io/masonwrdev/cloudsecret
-  newTag: 0.0.1

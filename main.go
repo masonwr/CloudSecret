@@ -16,10 +16,12 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"flag"
 	"os"
 	"time"
 
+	secretmanager "cloud.google.com/go/secretmanager/apiv1beta1"
 	secretsv1 "github.com/masonwr/CloudSecret/api/v1"
 	"github.com/masonwr/CloudSecret/controllers"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -68,10 +70,17 @@ func main() {
 		os.Exit(1)
 	}
 
+	gcpSecrets, err := secretmanager.NewClient(context.Background())
+	if err != nil {
+		setupLog.Error(err, "unable to create secret manager client")
+		os.Exit(1)
+	}
+
 	if err = (&controllers.CloudSecretReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("CloudSecret"),
-		Scheme: mgr.GetScheme(),
+		Client:     mgr.GetClient(),
+		Log:        ctrl.Log.WithName("controllers").WithName("CloudSecret"),
+		Scheme:     mgr.GetScheme(),
+		GcpSecrets: gcpSecrets,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "CloudSecret")
 		os.Exit(1)

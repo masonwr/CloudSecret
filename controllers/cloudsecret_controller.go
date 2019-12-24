@@ -23,9 +23,7 @@ import (
 	secretsv1 "github.com/masonwr/CloudSecret/api/v1"
 	secrets "google.golang.org/genproto/googleapis/cloud/secrets/v1beta1"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -33,8 +31,9 @@ import (
 // CloudSecretReconciler reconciles a CloudSecret object
 type CloudSecretReconciler struct {
 	client.Client
-	Log    logr.Logger
-	Scheme *runtime.Scheme
+	Log        logr.Logger
+	Scheme     *runtime.Scheme
+	GcpSecrets *secretmanager.Client
 }
 
 // +kubebuilder:rbac:groups=secrets.masonwr.dev,resources=cloudsecrets,verbs=get;list;watch;create;update;patch;delete
@@ -51,41 +50,21 @@ func (r *CloudSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	childSecretKey := types.NamespacedName{
-		Name:      cloudSecret.GetName(),
-		Namespace: cloudSecret.Namespace,
-	}
-
+	// fetch associated k8s (child) secret, creating it if not found
 	var childSecret corev1.Secret
-	if err := r.Get(ctx, childSecretKey, &childSecret); err != nil {
-		log.Info("creating new child secret")
-
-		childSecret.Name = childSecretKey.Name
-		childSecret.Namespace = childSecretKey.Namespace
-		childSecret.SetOwnerReferences([]metav1.OwnerReference{
-			metav1.OwnerReference{
-				APIVersion: cloudSecret.APIVersion,
-				Kind:       cloudSecret.Kind,
-				Name:       cloudSecret.Name,
-				UID:        cloudSecret.UID,
-			},
-		})
-
+	if err := r.Get(ctx, cloudSecret.GetChildSecretKey(), &childSecret); err != nil {
+		log.Info("creating child secret")
+		childSecret = cloudSecret.InitChildSecret()
 		if err := r.Create(ctx, &childSecret); err != nil {
 			log.Error(err, "unable to create child secret")
 			return ctrl.Result{}, err
 		}
 	}
 
-	secretClient, err := secretmanager.NewClient(ctx)
-	if err != nil {
-		log.Error(err, "unable to create secret manager client")
-	}
-
 	// init and copy data to child k8s secret
 	childSecret.Data = make(map[string][]byte)
 	for k, v := range cloudSecret.Spec.Data {
-		access, err := secretClient.AccessSecretVersion(ctx, &secrets.AccessSecretVersionRequest{Name: v})
+		access, err := r.GcpSecrets.AccessSecretVersion(ctx, &secrets.AccessSecretVersionRequest{Name: v})
 		if err != nil {
 			log.Error(err, "unable to access secret", "secret_path", v)
 			continue
