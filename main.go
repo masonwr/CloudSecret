@@ -18,6 +18,7 @@ package main
 import (
 	"flag"
 	"os"
+	"time"
 
 	secretsv1 "github.com/masonwr/CloudSecret/api/v1"
 	"github.com/masonwr/CloudSecret/controllers"
@@ -53,11 +54,13 @@ func main() {
 		o.Development = false
 	}))
 
+	reconsilicationLoopDelay := 10 * time.Second
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:             scheme,
 		MetricsBindAddress: metricsAddr,
 		LeaderElection:     enableLeaderElection,
 		Port:               9443,
+		SyncPeriod:         &reconsilicationLoopDelay,
 	})
 
 	if err != nil {
