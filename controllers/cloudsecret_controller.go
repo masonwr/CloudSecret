@@ -62,6 +62,7 @@ func (r *CloudSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 		childSecret.Name = childSecretKey.Name
 		childSecret.Namespace = childSecretKey.Namespace
+<<<<<<< HEAD
 		childSecret.SetOwnerReferences([]metav1.OwnerReference{
 			metav1.OwnerReference{
 				APIVersion: cloudSecret.APIVersion,
@@ -73,6 +74,21 @@ func (r *CloudSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 		if err := r.Create(ctx, &childSecret); err != nil {
 			log.Error(err, "unable to create child secret")
+=======
+
+		ownerRef := metav1.OwnerReference{
+			APIVersion: cloudSecret.TypeMeta.APIVersion,
+			Kind:       cloudSecret.TypeMeta.Kind,
+			Name:       cloudSecret.Name,
+			UID:        cloudSecret.UID,
+		}
+
+		childSecret.OwnerReferences = []metav1.OwnerReference{ownerRef}
+
+		err := r.Create(ctx, &childSecret)
+		if err != nil {
+			log.Error(err, "unable to create secret")
+>>>>>>> 7728966d15a9d8258ee506bf4eec17b48602a037
 			return ctrl.Result{}, err
 		}
 	}
