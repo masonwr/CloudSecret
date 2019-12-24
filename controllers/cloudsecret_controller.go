@@ -20,6 +20,7 @@ import (
 
 	secretmanager "cloud.google.com/go/secretmanager/apiv1beta1"
 	"github.com/go-logr/logr"
+	secretsv1 "github.com/masonwr/CloudSecret/api/v1"
 	secrets "google.golang.org/genproto/googleapis/cloud/secrets/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -27,8 +28,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	secretsv1 "github.com/masonwr/CloudSecret/api/v1"
 )
 
 // CloudSecretReconciler reconciles a CloudSecret object
@@ -60,7 +59,7 @@ func (r *CloudSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 	childSecretKey := types.NamespacedName{
 		Name:      cloudSecret.GetName(),
-		Namespace: req.Namespace,
+		Namespace: cloudSecret.Namespace,
 	}
 
 	var childSecret corev1.Secret
@@ -86,7 +85,6 @@ func (r *CloudSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 	// init and copy data to child k8s secret
 	childSecret.Data = make(map[string][]byte)
-
 	for k, v := range cloudSecret.Spec.Data {
 		access, err := secretClient.AccessSecretVersion(ctx, &secrets.AccessSecretVersionRequest{Name: v})
 		if err != nil {
