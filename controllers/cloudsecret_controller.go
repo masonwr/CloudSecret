@@ -45,11 +45,6 @@ func (r *CloudSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	ctx := context.Background()
 	log := r.Log.WithValues("cloudsecret", req.NamespacedName)
 
-	secretClient, err := secretmanager.NewClient(ctx)
-	if err != nil {
-		log.Error(err, "unable to create secret manager client")
-	}
-
 	// fetch cloud secret object
 	var cloudSecret secretsv1.CloudSecret
 	if err := r.Get(ctx, req.NamespacedName, &cloudSecret); err != nil {
@@ -81,6 +76,11 @@ func (r *CloudSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 			log.Error(err, "unable to create child secret")
 			return ctrl.Result{}, err
 		}
+	}
+
+	secretClient, err := secretmanager.NewClient(ctx)
+	if err != nil {
+		log.Error(err, "unable to create secret manager client")
 	}
 
 	// init and copy data to child k8s secret
