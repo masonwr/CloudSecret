@@ -17,6 +17,8 @@ package controllers
 
 import (
 	"context"
+	"fmt"
+	"time"
 
 	secretmanager "cloud.google.com/go/secretmanager/apiv1beta1"
 	"github.com/go-logr/logr"
@@ -79,7 +81,8 @@ func (r *CloudSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		return ctrl.Result{}, err
 	}
 
-	return ctrl.Result{}, nil
+	recDelay := time.Duration(cloudSecret.Spec.SyncPeriod) * time.Second
+	return ctrl.Result{RequeueAfter: recDelay}, nil
 }
 
 func (r *CloudSecretReconciler) SetupWithManager(mgr ctrl.Manager) error {

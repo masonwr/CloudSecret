@@ -27,7 +27,8 @@ import (
 type CloudSecretSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-	Data map[string]string `json:"data,omiteempty"`
+	Data       map[string]string `json:"data,omiteempty"`
+	SyncPeriod uint64            `json:"syncPeriod,omiteempty"`
 }
 
 // CloudSecretStatus defines the observed state of CloudSecret
