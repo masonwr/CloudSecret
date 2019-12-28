@@ -14,7 +14,7 @@ spec:
     SECRET_DATA: projects/<PROJECT_ID>/secrets/test/versions/latest
 ```
 
-CloudSecret map a key to a Secret Manager Path, and produce a matching Kubernetes secret with the resolved secret data. 
+CloudSecret map a key to a Secret Manager Path, and produces a matching Kubernetes secret with the resolved secret data. 
 
 For example, if we applied the above CloudSecret, this would result in the creation of the following Kubernetes secret:
 
@@ -101,4 +101,6 @@ keep this secret, keep this safe
 
 
 
+## Misc
 
+info of polling interval
