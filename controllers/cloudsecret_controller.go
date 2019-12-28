@@ -17,7 +17,6 @@ package controllers
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	secretmanager "cloud.google.com/go/secretmanager/apiv1beta1"
