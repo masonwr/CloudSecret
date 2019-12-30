@@ -25,7 +25,6 @@ data:
 kind: Secret
 ```
 
-Built with [kubebuilder](https://github.com/kubernetes-sigs/kubebuilder)
 
 ## Install
 prereqs:
@@ -106,3 +105,7 @@ keep this secret, keep this safe
 
 #### TODO:
 - [ ] implement controls for handeling when secret look up fails 
+
+
+## NOTE
+Built with the awesome [kubebuilder](https://github.com/kubernetes-sigs/kubebuilder).
