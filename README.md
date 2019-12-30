@@ -14,7 +14,7 @@ spec:
     SECRET_DATA: projects/<PROJECT_ID>/secrets/test/versions/latest
 ```
 
-CloudSecret map a key to a Secret Manager Path, and produces a matching Kubernetes secret with the resolved secret data. 
+CloudSecrets map a key to a Secret Manager Path, and produces a matching Kubernetes secret with the resolved secret data. 
 
 For example, if we apply the above CloudSecret, this would result in the creation of the following Kubernetes secret:
 
@@ -27,20 +27,14 @@ kind: Secret
 
 
 ## Install
-prereqs:
-- kubectl
-- gcloud
-- kustomize
-- go (1.13)
-
 > NB: The service account running the deployment must have the "Secret Manager Secret Accessor" role. And the Secret Manager API must be [enabled](https://cloud.google.com/secret-manager/docs/quickstart-secret-manager-console).
 
 ### Deploy (public image)
 
 ```shell
 $ git clone https://github.com/masonwr/CloudSecret && cd CloudSecret
-$ make install  # install CRD definitionf
-$ make deploy   # use public image build from this repo
+$ make install  # install CRD 
+$ make deploy   # deploy using the public image built from this repo (gcr.io/public-263420/cloudsecret-controller)
 ```
 
 ### Build (build from source)
@@ -52,8 +46,6 @@ $ make install
 $ make docker-build docker-push
 $ make deploy
 ```
-
-
 
 ## Tutorial
 
@@ -102,10 +94,15 @@ $ kubectl get secrets example -o json | jq -r .data.SECRET_DATA | base64 -d
 keep this secret, keep this safe
 ```
 
+## Dependencies 
+- kubectl
+- gcloud
+- docker
+- kustomize
+- go (1.13)
 
 #### TODO:
 - [ ] implement controls for handeling when secret look up fails 
-
 
 ## NOTE
 Built with the awesome [kubebuilder](https://github.com/kubernetes-sigs/kubebuilder).
