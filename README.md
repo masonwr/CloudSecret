@@ -69,7 +69,7 @@ $ gcloud beta secrets  create loc-of-ring \
    --replication-policy=automatic
 $ gcloud beta secrets describe loc-of-ring --project=$PROJECT_ID
 createTime: '2019-12-23T21:11:34.245558Z'
-name: projects/<PROJECT_ID>/secrets/test
+name: projects/<PROJECT_ID>/secrets/loc-of-ring
 replication:
   automatic: {}
 ```
