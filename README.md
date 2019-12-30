@@ -93,6 +93,7 @@ keep this secret, keep this safe
 ```
 
 ## Dependencies 
+- [kubebuilder](https://book.kubebuilder.io/quick-start.html#installation)
 - kubectl
 - gcloud
 - docker
