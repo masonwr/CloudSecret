@@ -29,12 +29,12 @@ type CloudSecretSpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 
 	// Data key secret path mapping
-	Data map[string]string `json:"data,omiteempty"`
+	Data map[string]string `json:"data,omitempty"`
 
 	// SyncPeriod defines in seconds the delay before
 	// the secret is again reconciled, in essense the
 	// polling interval.
-	SyncPeriod uint64 `json:"syncPeriod,omiteempty"`
+	SyncPeriod uint64 `json:"syncPeriod,omitempty"`
 }
 
 // CloudSecretStatus defines the observed state of CloudSecret
