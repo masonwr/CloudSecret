@@ -71,7 +71,6 @@ Note the fully qualified secret name.
 
 
 **Define a CloudSecret**
-
 ```shell
 $ cat << EOF > cloudSecretExample.yaml
 apiVersion: secrets.masonwr.dev/v1                                                                                                   
@@ -88,7 +87,6 @@ $ kubectl apply -f cloudSecretExample.yaml
 
 
 **Verify**
-
 ```shell
 $ kubectl get secrets example -o json | jq -r .data.SECRET_DATA | base64 -d
 keep this secret, keep this safe
@@ -102,7 +100,7 @@ keep this secret, keep this safe
 - go (1.13)
 
 #### TODO:
-- [ ] implement controls for handeling when secret look up fails 
+- [ ]  Implement controls for handling when secret lookup fails  
 
 ## NOTE
 Built with the awesome [kubebuilder](https://github.com/kubernetes-sigs/kubebuilder).
