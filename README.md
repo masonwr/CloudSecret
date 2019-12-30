@@ -36,7 +36,7 @@ prereqs:
 
 > NB: The service account running the deployment must have the "Secret Manager Secret Accessor" role. And the Secret Manager API must be [enabled](https://cloud.google.com/secret-manager/docs/quickstart-secret-manager-console).
 
-### Quick start
+### Deploy (public image)
 
 ```shell
 $ git clone https://github.com/masonwr/CloudSecret && cd CloudSecret
@@ -44,7 +44,7 @@ $ make install  # install CRD definitionf
 $ make deploy   # use public image build from this repo
 ```
 
-### Custom Image
+### Build (build from source)
 
 ```shell
 $ git clone https://github.com/masonwr/CloudSecret && cd CloudSecret
