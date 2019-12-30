@@ -31,6 +31,11 @@ kind: Secret
 
 ### Deploy (public image)
 
+**Dependencies**
+- [kustomize](https://github.com/kubernetes-sigs/kustomize/blob/master/docs/INSTALL.md)
+- [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
+
+
 ```shell
 $ git clone https://github.com/masonwr/CloudSecret && cd CloudSecret
 $ make install  # install CRD 
@@ -38,6 +43,10 @@ $ make deploy   # deploy using the public image built from this repo (gcr.io/pub
 ```
 
 ### Build (build from source)
+
+**Dependencies**
+- [kubebuilder](https://book.kubebuilder.io/quick-start.html#installation)
+
 
 ```shell
 $ git clone https://github.com/masonwr/CloudSecret && cd CloudSecret
@@ -48,6 +57,9 @@ $ make deploy
 ```
 
 ## Tutorial
+**Dependencies**
+- [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
+- [gcloud](https://cloud.google.com/sdk/install)
 
 **Create the GCP Secret, and get its path**
 
@@ -91,14 +103,6 @@ $ kubectl apply -f cloudSecretExample.yaml
 $ kubectl get secrets example -o json | jq -r .data.SECRET_DATA | base64 -d
 keep this secret, keep this safe
 ```
-
-## Dependencies 
-- [kubebuilder](https://book.kubebuilder.io/quick-start.html#installation)
-- kubectl
-- gcloud
-- docker
-- kustomize
-- go (1.13)
 
 #### TODO:
 - [ ]  Implement controls for handling when secret lookup fails  
