@@ -19,10 +19,10 @@ import (
 	"context"
 	"time"
 
-	secretmanager "cloud.google.com/go/secretmanager/apiv1beta1"
+	secretmanager "cloud.google.com/go/secretmanager/apiv1"
 	"github.com/go-logr/logr"
 	secretsv1 "github.com/masonwr/CloudSecret/api/v1"
-	secrets "google.golang.org/genproto/googleapis/cloud/secrets/v1beta1"
+	secrets "google.golang.org/genproto/googleapis/cloud/secretmanager/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"

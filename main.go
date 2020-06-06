@@ -20,7 +20,7 @@ import (
 	"flag"
 	"os"
 
-	secretmanager "cloud.google.com/go/secretmanager/apiv1beta1"
+	secretmanager "cloud.google.com/go/secretmanager/apiv1"
 	secretsv1 "github.com/masonwr/CloudSecret/api/v1"
 	"github.com/masonwr/CloudSecret/controllers"
 	"k8s.io/apimachinery/pkg/runtime"

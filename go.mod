@@ -1,13 +1,15 @@
 module github.com/masonwr/CloudSecret
 
-go 1.13
+go 1.14
 
 require (
-	cloud.google.com/go v0.50.0
+	cloud.google.com/go v0.57.0
 	github.com/go-logr/logr v0.1.0
+	github.com/golang/protobuf v1.4.2 // indirect
 	github.com/onsi/ginkgo v1.8.0
 	github.com/onsi/gomega v1.5.0
-	google.golang.org/genproto v0.0.0-20191223191004-3caeed10a8bf
+	google.golang.org/genproto v0.0.0-20200526211855-cb27e3aa2013
+	google.golang.org/protobuf v1.24.0 // indirect
 	k8s.io/api v0.0.0-20190918155943-95b840bb6a1f
 	k8s.io/apimachinery v0.0.0-20190913080033-27d36303b655
 	k8s.io/client-go v0.0.0-20190918160344-1fbdaa4c8d90
