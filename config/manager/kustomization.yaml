@@ -5,4 +5,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: gcr.io/public-263420/cloudsecret-controller
-  newTag: 0.0.4
+  newTag: 0.0.5
