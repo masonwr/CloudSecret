@@ -17,11 +17,13 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"flag"
 	"os"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
+	secretmanager "cloud.google.com/go/secretmanager/apiv1"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
 	"k8s.io/apimachinery/pkg/runtime"
@@ -78,9 +80,17 @@ func main() {
 		os.Exit(1)
 	}
 
+	// setup GCP secret manager client
+	gcpSecrets, err := secretmanager.NewClient(context.Background())
+	if err != nil {
+		setupLog.Error(err, "unable to create secret manager client")
+		os.Exit(1)
+	}
+
 	if err = (&controllers.CloudSecretReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
+		Client:     mgr.GetClient(),
+		Scheme:     mgr.GetScheme(),
+		GcpSecrets: gcpSecrets,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "CloudSecret")
 		os.Exit(1)
