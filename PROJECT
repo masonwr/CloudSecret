@@ -1,7 +1,16 @@
 domain: masonwr.dev
+layout:
+- go.kubebuilder.io/v3
+projectName: cloudsecret
 repo: github.com/masonwr/CloudSecret
 resources:
-- group: secrets
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: masonwr.dev
+  group: secrets
   kind: CloudSecret
+  path: github.com/masonwr/CloudSecret/api/v1
   version: v1
-version: "2"
+version: "3"

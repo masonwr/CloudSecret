@@ -33,6 +33,12 @@ rules:
 - apiGroups:
   - secrets.masonwr.dev
   resources:
+  - cloudsecrets/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - secrets.masonwr.dev
+  resources:
   - cloudsecrets/status
   verbs:
   - get

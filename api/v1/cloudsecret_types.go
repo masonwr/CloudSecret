@@ -1,4 +1,5 @@
 /*
+Copyright 2021.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -41,9 +42,13 @@ type CloudSecretSpec struct {
 type CloudSecretStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+
+	// SecretResolution map the state of each secret, either RESOLVED or FAILED
+	SecretResolution map[string]string `json:"secretResolution,omitempty"`
 }
 
-// +kubebuilder:object:root=true
+//+kubebuilder:object:root=true
+//+kubebuilder:subresource:status
 
 // CloudSecret is the Schema for the cloudsecrets API
 type CloudSecret struct {
@@ -52,6 +57,19 @@ type CloudSecret struct {
 
 	Spec   CloudSecretSpec   `json:"spec,omitempty"`
 	Status CloudSecretStatus `json:"status,omitempty"`
+}
+
+//+kubebuilder:object:root=true
+
+// CloudSecretList contains a list of CloudSecret
+type CloudSecretList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []CloudSecret `json:"items"`
+}
+
+func init() {
+	SchemeBuilder.Register(&CloudSecret{}, &CloudSecretList{})
 }
 
 // GetChildSecretKey returns a key suitable for searching for a
@@ -80,17 +98,4 @@ func (c *CloudSecret) InitChildSecret() corev1.Secret {
 	})
 
 	return secret
-}
-
-// +kubebuilder:object:root=true
-
-// CloudSecretList contains a list of CloudSecret
-type CloudSecretList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []CloudSecret `json:"items"`
-}
-
-func init() {
-	SchemeBuilder.Register(&CloudSecret{}, &CloudSecretList{})
 }

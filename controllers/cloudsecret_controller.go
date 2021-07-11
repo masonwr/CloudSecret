@@ -1,4 +1,5 @@
 /*
+Copyright 2021.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,16 +18,17 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
-	"github.com/go-logr/logr"
 	secretsv1 "github.com/masonwr/CloudSecret/api/v1"
 	secrets "google.golang.org/genproto/googleapis/cloud/secretmanager/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 const defaultRetryTime = time.Duration(5) * time.Second
@@ -34,17 +36,26 @@ const defaultRetryTime = time.Duration(5) * time.Second
 // CloudSecretReconciler reconciles a CloudSecret object
 type CloudSecretReconciler struct {
 	client.Client
-	Log        logr.Logger
 	Scheme     *runtime.Scheme
 	GcpSecrets *secretmanager.Client
 }
 
-// +kubebuilder:rbac:groups=secrets.masonwr.dev,resources=cloudsecrets,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=secrets.masonwr.dev,resources=cloudsecrets/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=secrets.masonwr.dev,resources=cloudsecrets,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=secrets.masonwr.dev,resources=cloudsecrets/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=secrets.masonwr.dev,resources=cloudsecrets/finalizers,verbs=update
 // +kubebuilder:rbac:groups=core,resources=secrets,verbs=get;list;watch;create;update;patch;delete
-func (r *CloudSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	ctx := context.Background()
-	log := r.Log.WithValues("cloudsecret", req.NamespacedName)
+
+// Reconcile is part of the main kubernetes reconciliation loop which aims to
+// move the current state of the cluster closer to the desired state.
+// TODO(user): Modify the Reconcile function to compare the state specified by
+// the CloudSecret object against the actual cluster state, and then
+// perform operations to make the cluster state reflect the state specified by
+// the user.
+//
+// For more details, check Reconcile and its Result here:
+// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.8.3/pkg/reconcile
+func (r *CloudSecretReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+	log := log.FromContext(ctx)
 
 	// fetch cloud secret object
 	var cloudSecret secretsv1.CloudSecret
@@ -67,6 +78,10 @@ func (r *CloudSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		}
 	}
 
+	if cloudSecret.Status.SecretResolution == nil {
+		cloudSecret.Status.SecretResolution = make(map[string]string)
+	}
+
 	// nothing left todo
 	if len(cloudSecret.Spec.Data) == 0 {
 		log.Info("empty cloud secret")
@@ -79,12 +94,19 @@ func (r *CloudSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	for k, v := range cloudSecret.Spec.Data {
 		access, err := r.GcpSecrets.AccessSecretVersion(ctx, &secrets.AccessSecretVersionRequest{Name: v})
 		if err != nil {
+			log.Info("could not access secret")
 			log.Error(err, "unable to access secret", "secret_path", v)
+			cloudSecret.Status.SecretResolution[k] = fmt.Sprintf("%s", err)
 			getSecretFail = true
 			continue
 		}
 
+		cloudSecret.Status.SecretResolution[k] = "RESOLVED"
 		childSecret.Data[k] = access.Payload.GetData()
+	}
+
+	if err := r.Status().Update(ctx, &cloudSecret); err != nil {
+		log.Error(err, "error updating cloudsecret")
 	}
 
 	// if we failed to fetch a secret we retry by re-queuing.
@@ -113,6 +135,7 @@ func (r *CloudSecretReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	return result, nil
 }
 
+// SetupWithManager sets up the controller with the Manager.
 func (r *CloudSecretReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&secretsv1.CloudSecret{}).
